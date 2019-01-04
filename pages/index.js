@@ -4,16 +4,26 @@ import gql from "graphql-tag";
 
 import UserList from "../components/user-list";
 
-
 const GET_USERS = gql`
-  query {
-    users(orderBy: createdAt_DESC, first: 5) {
+  query users($orderBy: UserOrderByInput!, $first: Int!) {
+    users(orderBy: $orderBy, first: $first) {
       login
       fullName
       id
     }
   }
 `;
+
+
+// const GET_USERS = gql`
+//   query {
+//     users(orderBy: createdAt_DESC, first: 5) {
+//       login
+//       fullName
+//       id
+//     }
+//   }
+// `;
 
 const DELETE_USER_MUTATION = gql`
   mutation removeUser($login: String!) {
@@ -45,7 +55,6 @@ export default class IndexPage extends Component {
     subscribeToMore({
       document: NEW_USERS_SUBSCRIPTION,
       updateQuery: (prev, { subscriptionData }) => {
-
         const newUser = subscriptionData.data.users.node;
 
         const deletedUser = subscriptionData.data.users.previousValues;
@@ -54,7 +63,10 @@ export default class IndexPage extends Component {
         // console.log("---new-data", subscriptionData.data.users);
 
         // console.log("---new-user", newUser);
-        // console.log("---deleted-user", subscriptionData.data.users.previousValues.login)
+        // console.log(
+        //   "---deleted-user",
+        //   subscriptionData.data.users.previousValues.login
+        // );
 
         if (newUser !== null) {
           // TODO: check if it's alright to use slice here
@@ -62,9 +74,9 @@ export default class IndexPage extends Component {
             ? Object.assign({}, prev, {
                 users: [newUser, ...prev.users.slice(0, -1)]
               })
-            : Object.assign({}, prev, { 
-                users: [newUser, ...prev.users] 
-            });
+            : Object.assign({}, prev, {
+                users: [newUser, ...prev.users]
+              });
         }
 
         if (deletedUser !== null) {
@@ -81,14 +93,27 @@ export default class IndexPage extends Component {
     return (
       <Mutation
         mutation={DELETE_USER_MUTATION}
-        update={(cache, { data }) => {
-          console.log("---mut-cache", cache);
-          console.log("---mut-data", data);
-        }}
+        // update={(cache, { data }) => {
+        //   console.log("---mut-cache", cache);
+        //   console.log("---mut-data", data);
+        // }}
       >
         {mutate => (
-          <Query query={GET_USERS}>
-            {({ loading, error, data, networkstatus, subscribeToMore }) => {
+          <Query
+            query={GET_USERS}
+            variables={{
+              orderBy: "createdAt_DESC",
+              first: 5
+            }}
+          >
+            {({
+              loading,
+              error,
+              data,
+              networkstatus,
+              subscribeToMore,
+              fetchMore
+            }) => {
               if (networkstatus === 4) return <h1>Refetching!</h1>;
               if (loading) return <h1>Loading!</h1>;
               if (error) return `Error: ${error}`;
@@ -100,12 +125,39 @@ export default class IndexPage extends Component {
                       variables: { login },
                       refetchQueries: [
                         {
-                          query: GET_USERS
+                          query: GET_USERS,
+                          variables: {
+                            orderBy: "createdAt_DESC",
+                            first: 5
+                          }
                         }
                       ]
                     })
                   }
-                  // onLoadMore={}
+                  onLoadMore={() =>
+                //   TODO: fix load more behaviour on delete
+                    fetchMore({
+                      variables: {
+                        orderBy: "createdAt_DESC",
+                        first: data.users.length + 5
+                      },
+                      updateQuery: (prev, { fetchMoreResult }) => {
+                        console.log("---prev", prev);
+                        console.log("---fetch-more", fetchMoreResult);
+                        // if (!fetchMoreResult) return prev;
+                        const newUsers = fetchMoreResult.users.filter(
+                          newUser => {
+                            return prev.users.filter(prevUser => {
+                              return newUser.login === prevUser.login;
+                            });
+                          }
+                        );
+                        return Object.assign({}, prev, {
+                          users: [...newUsers]
+                        });
+                      }
+                    })
+                  }
                   subscribeToUserList={() =>
                     this.subscribeToUserList(subscribeToMore)
                   }
