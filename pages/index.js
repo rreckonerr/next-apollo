@@ -4,16 +4,18 @@ import gql from "graphql-tag";
 
 import UserList from "../components/user-list";
 
+import styled from "styled-components";
+import { theme, hex2Rgba } from "../styles";
+
 const GET_USERS = gql`
-  query users($orderBy: UserOrderByInput!, $first: Int!) {
-    users(orderBy: $orderBy, first: $first) {
+  query users($orderBy: UserOrderByInput!, $first: Int!, $skip: Int) {
+    users(orderBy: $orderBy, first: $first, skip: $skip) {
       login
       fullName
       id
     }
   }
 `;
-
 
 // const GET_USERS = gql`
 //   query {
@@ -49,6 +51,7 @@ const NEW_USERS_SUBSCRIPTION = gql`
     }
   }
 `;
+
 
 export default class IndexPage extends Component {
   subscribeToUserList = async subscribeToMore => {
@@ -117,56 +120,84 @@ export default class IndexPage extends Component {
               if (networkstatus === 4) return <h1>Refetching!</h1>;
               if (loading) return <h1>Loading!</h1>;
               if (error) return `Error: ${error}`;
-              return (
-                <UserList
-                  users={data.users}
-                  onUserDelete={({ login }) =>
-                    mutate({
-                      variables: { login },
-                      refetchQueries: [
-                        {
-                          query: GET_USERS,
-                          variables: {
-                            orderBy: "createdAt_DESC",
-                            first: 5
+              console.log('---data', data)
+              return (<div>
+                  <UserList
+                    users={data.users}
+                    onUserDelete={({ login }) =>
+                      mutate({
+                        variables: { login },
+                        refetchQueries: [
+                          {
+                            query: GET_USERS,
+                            variables: {
+                              orderBy: "createdAt_DESC",
+                              first: 5
+                            }
                           }
-                        }
-                      ]
-                    })
-                  }
-                  onLoadMore={() =>
-                //   TODO: fix load more behaviour on delete
-                    fetchMore({
-                      variables: {
-                        orderBy: "createdAt_DESC",
-                        first: data.users.length + 5
-                      },
-                      updateQuery: (prev, { fetchMoreResult }) => {
-                        console.log("---prev", prev);
-                        console.log("---fetch-more", fetchMoreResult);
-                        // if (!fetchMoreResult) return prev;
-                        const newUsers = fetchMoreResult.users.filter(
-                          newUser => {
-                            return prev.users.filter(prevUser => {
-                              return newUser.login === prevUser.login;
-                            });
-                          }
-                        );
-                        return Object.assign({}, prev, {
-                          users: [...newUsers]
-                        });
-                      }
-                    })
-                  }
-                  subscribeToUserList={() =>
-                    this.subscribeToUserList(subscribeToMore)
-                  }
-                />
+                        ]
+                      })
+                    }
+                    onLoadMore={() => this.loadMoreUsers(fetchMore, data)
+                      //   TODO: fix load more behaviour on delete
+                      // fetchMore({
+                      //   variables: {
+                      //     orderBy: "createdAt_DESC",
+                      //     first: data.users.length + 5
+                      //   },
+                      //   updateQuery: (prev, { fetchMoreResult }) => {
+                      //     // console.log("---prev", prev);
+                      //     // console.log("---fetch-more", fetchMoreResult);
+                      //     // if (!fetchMoreResult) return prev;
+                      //     const newUsers = fetchMoreResult.users.filter(
+                      //       newUser => {
+                      //         return prev.users.filter(prevUser => {
+                      //           return newUser.login === prevUser.login;
+                      //         });
+                      //       }
+                      //     );
+                      //     return Object.assign({}, prev, {
+                      //       users: [...newUsers]
+                      //     });
+                      //   }
+                      // })
+                    }
+                    subscribeToUserList={() =>
+                      this.subscribeToUserList(subscribeToMore)
+                    }
+                  />
+                  <h2>Pagination goes here</h2>
+                  </div>
               );
             }}
           </Query>
         )}
       </Mutation>
     );
+  }
+
+  loadMoreUsers (fetchMore, data) {
+    fetchMore({
+      variables: {
+        orderBy: "createdAt_DESC",
+        first: 5,
+        skip: data.users.length
+      },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        console.log("---prev", prev);
+        console.log("---fetch-more", fetchMoreResult);
+        // if (!fetchMoreResult) return prev;
+        const newUsers = fetchMoreResult.users.filter(
+          newUser => {
+            return prev.users.filter(prevUser => {
+              return newUser.login === prevUser.login;
+            });
+          }
+        );
+        return Object.assign({}, prev, {
+          users: [...newUsers]
+        });
+      }
+    })
   }
 }

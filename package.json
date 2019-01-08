@@ -22,5 +22,8 @@
     "react-dom": "^16.7.0",
     "styled-components": "^4.1.3",
     "subscriptions-transport-ws": "^0.9.15"
+  },
+  "devDependencies": {
+    "babel-plugin-styled-components": "^1.10.0"
   }
 }
