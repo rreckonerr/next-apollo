@@ -4,10 +4,9 @@ import gql from "graphql-tag";
 
 import UserList from "../components/user-list";
 
-import styled from "styled-components";
-import { theme, hex2Rgba } from "../styles";
+import Pagination from "../components/pagination";
 
-const GET_USERS = gql`
+export const GET_USERS = gql`
   query users($orderBy: UserOrderByInput!, $first: Int!, $skip: Int) {
     users(orderBy: $orderBy, first: $first, skip: $skip) {
       login
@@ -17,23 +16,6 @@ const GET_USERS = gql`
   }
 `;
 
-// const GET_USERS = gql`
-//   query {
-//     users(orderBy: createdAt_DESC, first: 5) {
-//       login
-//       fullName
-//       id
-//     }
-//   }
-// `;
-
-const DELETE_USER_MUTATION = gql`
-  mutation removeUser($login: String!) {
-    removeUser(login: $login) {
-      id
-    }
-  }
-`;
 
 const NEW_USERS_SUBSCRIPTION = gql`
   subscription {
@@ -51,7 +33,6 @@ const NEW_USERS_SUBSCRIPTION = gql`
     }
   }
 `;
-
 
 export default class IndexPage extends Component {
   subscribeToUserList = async subscribeToMore => {
@@ -94,34 +75,27 @@ export default class IndexPage extends Component {
 
   render() {
     return (
-      <Mutation
-        mutation={DELETE_USER_MUTATION}
-        // update={(cache, { data }) => {
-        //   console.log("---mut-cache", cache);
-        //   console.log("---mut-data", data);
-        // }}
+      <Query
+        query={GET_USERS}
+        variables={{
+          orderBy: "createdAt_DESC",
+          first: 5
+        }}
       >
-        {mutate => (
-          <Query
-            query={GET_USERS}
-            variables={{
-              orderBy: "createdAt_DESC",
-              first: 5
-            }}
-          >
-            {({
-              loading,
-              error,
-              data,
-              networkstatus,
-              subscribeToMore,
-              fetchMore
-            }) => {
-              if (networkstatus === 4) return <h1>Refetching!</h1>;
-              if (loading) return <h1>Loading!</h1>;
-              if (error) return `Error: ${error}`;
-              console.log('---data', data)
-              return (<div>
+        {({
+          loading,
+          error,
+          data,
+          networkstatus,
+          subscribeToMore,
+          fetchMore
+        }) => {
+          if (networkstatus === 4) return <h1>Refetching!</h1>;
+          if (loading) return <h1>Loading!</h1>;
+          if (error) return `Error: ${error}`;
+          console.log("---data", data);
+          return (
+            <div>
                   <UserList
                     users={data.users}
                     onUserDelete={({ login }) =>
@@ -138,45 +112,21 @@ export default class IndexPage extends Component {
                         ]
                       })
                     }
-                    onLoadMore={() => this.loadMoreUsers(fetchMore, data)
-                      //   TODO: fix load more behaviour on delete
-                      // fetchMore({
-                      //   variables: {
-                      //     orderBy: "createdAt_DESC",
-                      //     first: data.users.length + 5
-                      //   },
-                      //   updateQuery: (prev, { fetchMoreResult }) => {
-                      //     // console.log("---prev", prev);
-                      //     // console.log("---fetch-more", fetchMoreResult);
-                      //     // if (!fetchMoreResult) return prev;
-                      //     const newUsers = fetchMoreResult.users.filter(
-                      //       newUser => {
-                      //         return prev.users.filter(prevUser => {
-                      //           return newUser.login === prevUser.login;
-                      //         });
-                      //       }
-                      //     );
-                      //     return Object.assign({}, prev, {
-                      //       users: [...newUsers]
-                      //     });
-                      //   }
-                      // })
-                    }
                     subscribeToUserList={() =>
                       this.subscribeToUserList(subscribeToMore)
                     }
                   />
-                  <h2>Pagination goes here</h2>
-                  </div>
-              );
-            }}
-          </Query>
-        )}
-      </Mutation>
+              <Pagination
+                onLoadMore={() => this.loadMoreUsers(fetchMore, data)}
+              />
+            </div>
+          );
+        }}
+      </Query>
     );
   }
 
-  loadMoreUsers (fetchMore, data) {
+  loadMoreUsers(fetchMore, data) {
     fetchMore({
       variables: {
         orderBy: "createdAt_DESC",
@@ -187,17 +137,15 @@ export default class IndexPage extends Component {
         console.log("---prev", prev);
         console.log("---fetch-more", fetchMoreResult);
         // if (!fetchMoreResult) return prev;
-        const newUsers = fetchMoreResult.users.filter(
-          newUser => {
-            return prev.users.filter(prevUser => {
-              return newUser.login === prevUser.login;
-            });
-          }
-        );
+        const newUsers = fetchMoreResult.users.filter(newUser => {
+          return prev.users.filter(prevUser => {
+            return newUser.login === prevUser.login;
+          });
+        });
         return Object.assign({}, prev, {
           users: [...newUsers]
         });
       }
-    })
+    });
   }
 }
