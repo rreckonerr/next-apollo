@@ -64,10 +64,7 @@ export default class UserList extends Component {
                           refetchQueries: [
                             {
                               query: GET_USERS,
-                              variables: {
-                                orderBy: "createdAt_DESC",
-                                first: 5
-                              }
+                              variables: this.props.queryVariables
                             }
                           ]
                         })

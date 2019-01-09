@@ -16,7 +16,6 @@ export const GET_USERS = gql`
   }
 `;
 
-
 const NEW_USERS_SUBSCRIPTION = gql`
   subscription {
     users {
@@ -35,6 +34,22 @@ const NEW_USERS_SUBSCRIPTION = gql`
 `;
 
 export default class IndexPage extends Component {
+  state = {
+    queryVariables: {
+      orderBy: "createdAt_DESC",
+      first: 5,
+      skip: 0
+    }
+  };
+
+  /**
+   * @method
+   * @async
+   * @summary async subscription function
+   * @param {Function} subscribeToMore
+   * @returns {Object}
+   *        assignes new user list to existing store
+   */
   subscribeToUserList = async subscribeToMore => {
     subscribeToMore({
       document: NEW_USERS_SUBSCRIPTION,
@@ -77,10 +92,7 @@ export default class IndexPage extends Component {
     return (
       <Query
         query={GET_USERS}
-        variables={{
-          orderBy: "createdAt_DESC",
-          first: 5
-        }}
+        variables={this.state.queryVariables}
       >
         {({
           loading,
@@ -96,28 +108,16 @@ export default class IndexPage extends Component {
           console.log("---data", data);
           return (
             <div>
-                  <UserList
-                    users={data.users}
-                    onUserDelete={({ login }) =>
-                      mutate({
-                        variables: { login },
-                        refetchQueries: [
-                          {
-                            query: GET_USERS,
-                            variables: {
-                              orderBy: "createdAt_DESC",
-                              first: 5
-                            }
-                          }
-                        ]
-                      })
-                    }
-                    subscribeToUserList={() =>
-                      this.subscribeToUserList(subscribeToMore)
-                    }
-                  />
+              <UserList
+                users={data.users}
+                subscribeToUserList={() =>
+                  this.subscribeToUserList(subscribeToMore)
+                }
+                  queryVariables={this.state.queryVariables}
+              />
               <Pagination
-                onLoadMore={() => this.loadMoreUsers(fetchMore, data)}
+                onLoadMore={(fetchVariables) => this.loadMoreUsers(fetchMore, fetchVariables)}
+                queryVariables={this.state.queryVariables}
               />
             </div>
           );
@@ -126,13 +126,23 @@ export default class IndexPage extends Component {
     );
   }
 
-  loadMoreUsers(fetchMore, data) {
+
+  
+/**
+ * loadMoreUsers
+ * @method
+ * @summary fetch new data from the API
+ * @param {Function} fetchMore 
+ *        is provided by GET_USERS Query
+ * @param {Object} fetchVariables
+ *        comes from Pagination component
+ * @returns {Object}
+ *        assignes new user list to existing store
+ */
+  loadMoreUsers(fetchMore, fetchVariables) {
+    this.setState({queryVariables: fetchVariables})
     fetchMore({
-      variables: {
-        orderBy: "createdAt_DESC",
-        first: 5,
-        skip: data.users.length
-      },
+      variables: fetchVariables,
       updateQuery: (prev, { fetchMoreResult }) => {
         console.log("---prev", prev);
         console.log("---fetch-more", fetchMoreResult);

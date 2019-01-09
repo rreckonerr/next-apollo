@@ -12,15 +12,6 @@ const ADD_USER = gql`
   }
 `;
 
-const GET_USERS = gql`
-  query {
-    users(orderBy: createdAt_DESC, first: 5) {
-      login
-      fullName
-      id
-    }
-  }
-`;
 
 const Container = styled.div`
   background-color: white;
