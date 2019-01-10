@@ -1,13 +1,9 @@
 import React, { Component, Fragment } from "react";
 
-import UserForm from "./user-form";
 import UserCard from "./user-card";
 
 import styled from "styled-components";
-import { theme, hex2Rgba } from "../styles";
-import { Query, Mutation } from "react-apollo";
-
-import gql from "graphql-tag";
+import { hex2Rgba } from "../styles";
 
 const UsersWrapper = styled.div`
   width: 100%;
@@ -17,11 +13,6 @@ const UsersWrapper = styled.div`
   background-color: white;
 `;
 
-const FormWrapper = styled.div`
-  width: 100%;
-  margin: 0 auto;
-  text-align: center;
-`;
 
 const usersListHeader = {
   login: "LOGIN",
@@ -37,9 +28,6 @@ export default class UserList extends Component {
     const { users } = this.props;
     return (
       <Fragment>
-        <FormWrapper>
-          <UserForm />
-        </FormWrapper>
         <UsersWrapper>
           <UserCard user={usersListHeader} />
           {users && users.length > 0
