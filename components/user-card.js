@@ -2,6 +2,22 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import { TextButton, hex2Rgba } from "../styles";
 
+import gql from "graphql-tag";
+import { GET_USERS } from "../pages/index";
+import { Mutation } from "react-apollo";
+
+
+
+const DELETE_USER_MUTATION = gql`
+  mutation removeUser($login: String!) {
+    removeUser(login: $login) {
+      id
+    }
+  }
+`;
+
+
+
 const UserCardWrapper = styled.div`
   display: flex;
   cursor: pointer;
@@ -50,7 +66,7 @@ const Title = styled.div`
 const Info = styled.div`
   width: 35%;
   text-align: center;
-  `;
+`;
 
 export default class UserCard extends Component {
   render() {
@@ -80,9 +96,27 @@ export default class UserCard extends Component {
           <SecondaryFieldsWrapper>
             <Info>{user.fullName}</Info>
             <Info>{user.id}</Info>
-            <TextButton small secondary onClick={() => onUserDelete()}>
-              Delete
-            </TextButton>
+            <Mutation mutation={DELETE_USER_MUTATION}>
+              {mutate => (
+                <TextButton
+                  small
+                  secondary
+                  onClick={() =>
+                    mutate({
+                      variables: { login: user.login },
+                      refetchQueries: [
+                        {
+                          query: GET_USERS,
+                          variables: this.props.queryVariables
+                        }
+                      ]
+                    })
+                  }
+                >
+                  Delete
+                </TextButton>
+              )}
+            </Mutation>
           </SecondaryFieldsWrapper>
         </UserCardWrapper>
       </div>

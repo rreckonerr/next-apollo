@@ -7,16 +7,7 @@ import styled from "styled-components";
 import { theme, hex2Rgba } from "../styles";
 import { Query, Mutation } from "react-apollo";
 
-import { GET_USERS } from "../pages/index";
 import gql from "graphql-tag";
-
-const DELETE_USER_MUTATION = gql`
-  mutation removeUser($login: String!) {
-    removeUser(login: $login) {
-      id
-    }
-  }
-`;
 
 const UsersWrapper = styled.div`
   width: 100%;
@@ -51,29 +42,15 @@ export default class UserList extends Component {
         </FormWrapper>
         <UsersWrapper>
           <UserCard user={usersListHeader} />
-          <Mutation mutation={DELETE_USER_MUTATION}>
-            {mutate =>
-              users && users.length > 0
-                ? users.map(user => (
-                    <UserCard
-                      key={user.id}
-                      user={user}
-                      onUserDelete={() =>
-                        mutate({
-                          variables: { login: user.login },
-                          refetchQueries: [
-                            {
-                              query: GET_USERS,
-                              variables: this.props.queryVariables
-                            }
-                          ]
-                        })
-                      }
-                    />
-                  ))
-                : null
-            }
-          </Mutation>
+          {users && users.length > 0
+            ? users.map(user => (
+                <UserCard
+                  key={user.id}
+                  user={user}
+                  queryVariables={this.props.queryVariables}
+                />
+              ))
+            : null}
         </UsersWrapper>
       </Fragment>
     );
