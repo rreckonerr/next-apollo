@@ -9,6 +9,13 @@ import Pagination from "../components/pagination";
 import styled from "styled-components";
 import { BallsSpinner } from "../styles";
 
+import Button from '../_styles/button';
+import withRipple from '../_styles/utils/withRipple';
+
+
+const RippleButton = withRipple(Button);
+
+
 export const GET_USERS = gql`
   query users($orderBy: UserOrderByInput!, $first: Int!, $skip: Int) {
     users(orderBy: $orderBy, first: $first, skip: $skip) {
@@ -135,6 +142,9 @@ export default class IndexPage extends Component {
             );
           }}
         </Query>
+        <Button primary raised>Hey</Button>
+        <Button accent raised>Hello</Button>
+        <RippleButton accent>Ripple</RippleButton>
       </div>
     );
   }

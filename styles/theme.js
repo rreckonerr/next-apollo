@@ -1,19 +1,45 @@
+import { hex2Rgba } from "./index";
+
+const primary = "#9e9e9e",
+  primaryLight = "#cfcfcf",
+  primaryDark = "#707070",
+  secondary = "#f44336",
+  secondaryLight = "#ff7961",
+  secondaryDark = "#ba000d",
+  postBackground = "#ffffff",
+  fontOnDark = "#ffffff",
+  fontOnLight = "#000000",
+  black = "#000000",
+  white = "#ffffff";
+
 export const theme = {
-    color: {
-        primary: "#9e9e9e",
-        primaryLight: "#cfcfcf",
-        primaryDark: "#707070",
+  color: {
+    primary,
+    primaryLight,
+    primaryDark,
 
-        secondary: "#f44336",
-        secondaryLight: "#ff7961",
-        secondaryDark: "#ba000d",
+    secondary,
+    secondaryLight,
+    secondaryDark,
 
-        postBackground: "#ffffff",
+    postBackground,
 
-        fontOnDark: "#ffffff",
-        fontOnLight: "#000000"
+    fontOnDark,
+    fontOnLight
+  },
+  elevation: {
+    property: "box-shadow",
+    transition: {
+      duration: "280ms",
+      effect: "cubic-bezier(.4, 0, .2, 1)"
+    },
+    colors: {
+      umbra: () => hex2Rgba(black, 0.2),
+      penumbra: () => hex2Rgba(black, 0.14),
+      ambient: () => hex2Rgba(black, 0.12)
     }
-}
+  }
+};
 
 // export const theme = {
 //   color: {
