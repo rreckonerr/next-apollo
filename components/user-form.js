@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Mutation } from "react-apollo";
 import gql from "graphql-tag";
 import styled from 'styled-components';
-import { hex2Rgba, TextButton, RaisedButton } from "../styles";
+import { hex2Rgba, Button } from "../styles";
 
 const ADD_USER = gql`
   mutation addUser($login: String!, $fullName: String!) {
@@ -130,8 +130,8 @@ export default class UserForm extends Component {
                 <br />
               </InputsWrapper>
               <ButtonsWrapper>
-                <TextButton type="cancel">Cancel</TextButton>
-                <RaisedButton type="submit">Add user</RaisedButton>
+                <Button primary type="cancel">Cancel</Button>
+                <Button accent raised type="submit">Add user</Button>
               </ButtonsWrapper>
             </Form>
           </Container>

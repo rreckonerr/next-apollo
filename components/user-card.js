@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import styled from "styled-components";
-import { TextButton, hex2Rgba } from "../styles";
+import { Button, hex2Rgba } from "../styles";
 
 import gql from "graphql-tag";
 import { GET_USERS } from "../pages/index";
@@ -98,9 +98,8 @@ export default class UserCard extends Component {
             <Info>{user.id}</Info>
             <Mutation mutation={DELETE_USER_MUTATION}>
               {mutate => (
-                <TextButton
-                  small
-                  secondary
+                <Button dense
+                  primary
                   onClick={() =>
                     mutate({
                       variables: { login: user.login },
@@ -114,7 +113,7 @@ export default class UserCard extends Component {
                   }
                 >
                   Delete
-                </TextButton>
+                </Button>
               )}
             </Mutation>
           </SecondaryFieldsWrapper>

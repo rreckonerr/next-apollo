@@ -1,6 +1,7 @@
 import styled, { css } from 'styled-components';
-import elevation, { elevationTransition } from './utils/elevation';
-import ripple from './utils/ripple';
+import { elevation, elevationTransition } from './utils';
+import { ripple } from './utils';
+import { withRipple } from './utils';
 
 const primary = css`
   color: ${props => props.theme.color.primary};
@@ -93,4 +94,4 @@ const Button = styled.button.attrs({
   `}
 `;
 
-export default Button;
+export default withRipple(Button);

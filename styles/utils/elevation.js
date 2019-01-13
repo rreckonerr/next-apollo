@@ -108,4 +108,4 @@ const elevationMixin = z => css`
     ${addDepth('ambient', z)};
 `;
 
-export default elevationMixin;
+export default elevationMixin

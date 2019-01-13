@@ -1,13 +1,12 @@
 import { theme } from './theme'
-import { TextButton, RaisedButton } from './buttons';
+import Button from './button';
 import { hex2Rgba } from './utils';
 import { media } from './media'
 import { BallsSpinner } from './spinners'
 
 export {
     theme,
-    TextButton,
-    RaisedButton,
+    Button,
     hex2Rgba,
     media,
     BallsSpinner
